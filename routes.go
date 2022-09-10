@@ -70,7 +70,7 @@ func GetDockerInfo(ctx context.Context, dockerClient *client.Client) gin.Handler
 		queryParam := c.Query("items")
 
 		if queryParam == "containers" {
-			containers, err := dockerClient.ContainerList(ctx, types.ContainerListOptions{All: false})
+			containers, err := dockerClient.ContainerList(ctx, types.ContainerListOptions{All: true})
 			logError(err)
 			conArr := []string{}
 			for _, container := range containers {
