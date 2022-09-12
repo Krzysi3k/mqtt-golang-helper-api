@@ -13,11 +13,6 @@ import (
 	"github.com/go-redis/redis/v9"
 )
 
-type Car struct {
-	Link  string `json:"link"`
-	Price string `json:"price"`
-}
-
 // GET /get-redis-data?data=REDISKEY
 func GetRedisData(ctx context.Context, rdb *redis.Client) gin.HandlerFunc {
 
@@ -27,22 +22,25 @@ func GetRedisData(ctx context.Context, rdb *redis.Client) gin.HandlerFunc {
 			c.JSON(400, gin.H{"payload": "missing query string"})
 			return
 		}
+
 		val, err := rdb.Get(ctx, keyName).Result()
 		if err != nil {
 			c.JSON(404, gin.H{"payload": "key not found"})
 			return
 		}
-		result := make(map[string]interface{})
-
-		if strings.Contains(keyName, "car:") {
-			cars := []Car{}
-			json.Unmarshal([]byte(val), &cars)
-			c.JSON(200, cars)
-			return
-		} else if keyName == "docker-metrics-cpu" || keyName == "docker-metrics-mem" || keyName == "termometr-payload" {
+		if keyName == "docker-metrics-cpu" || keyName == "docker-metrics-mem" || keyName == "termometr-payload" {
 			c.String(200, val)
 			return
-		} else if strings.Contains(val, "{") {
+		}
+		if strings.Contains(val, "[") {
+			resultArr := []map[string]interface{}{}
+			json.Unmarshal([]byte(val), &resultArr)
+			c.JSON(200, resultArr)
+			return
+		}
+
+		result := make(map[string]interface{})
+		if strings.Contains(val, "{") {
 			json.Unmarshal([]byte(val), &result)
 		} else {
 			result["payload"] = val
@@ -60,6 +58,7 @@ func GetRedisInfo(ctx context.Context, rdb *redis.Client) gin.HandlerFunc {
 			"door-state",
 			"rotate-option",
 			"washing-state",
+			// "clicks",
 		}
 		val := rdb.MGet(ctx, keys...).Val()
 		combinedOutput := []map[string]interface{}{}
