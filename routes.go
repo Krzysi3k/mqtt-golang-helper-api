@@ -13,6 +13,11 @@ import (
 	"github.com/go-redis/redis/v9"
 )
 
+type Car struct {
+	Link  string `json:"link"`
+	Price string `json:"price"`
+}
+
 // GET /get-redis-data?data=REDISKEY
 func GetRedisData(ctx context.Context, rdb *redis.Client) gin.HandlerFunc {
 
@@ -27,13 +32,18 @@ func GetRedisData(ctx context.Context, rdb *redis.Client) gin.HandlerFunc {
 			c.JSON(404, gin.H{"payload": "key not found"})
 			return
 		}
-
 		result := make(map[string]interface{})
-		if strings.Contains(val, "{") {
-			json.Unmarshal([]byte(val), &result)
+
+		if strings.Contains(keyName, "car:") {
+			cars := []Car{}
+			json.Unmarshal([]byte(val), &cars)
+			c.JSON(200, cars)
+			return
 		} else if keyName == "docker-metrics-cpu" || keyName == "docker-metrics-mem" || keyName == "termometr-payload" {
 			c.String(200, val)
 			return
+		} else if strings.Contains(val, "{") {
+			json.Unmarshal([]byte(val), &result)
 		} else {
 			result["payload"] = val
 		}
