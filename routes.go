@@ -63,7 +63,9 @@ func GetRedisInfo(ctx context.Context, rdb *redis.Client) gin.HandlerFunc {
 		val := rdb.MGet(ctx, keys...).Val()
 		combinedOutput := []map[string]interface{}{}
 		for i := 0; i < len(keys); i++ {
-			combinedOutput = append(combinedOutput, map[string]interface{}{keys[i]: val[i]})
+			if val[i] != nil {
+				combinedOutput = append(combinedOutput, map[string]interface{}{keys[i]: val[i]})
+			}
 		}
 		redisKeys := rdb.Keys(ctx, "*").Val()
 		combinedOutput = append(combinedOutput, map[string]interface{}{"Redis keys-in-use": len(redisKeys)})
