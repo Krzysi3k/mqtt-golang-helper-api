@@ -112,7 +112,7 @@ func mergeMaps(maps ...map[string]interface{}) map[string]interface{} {
 	result := make(map[string]interface{})
 	for _, m := range maps {
 		for k, v := range m {
-			if value, ok := v.(string); ok == true {
+			if value, ok := v.(string); ok {
 				if strings.Contains(value, "{") || strings.Contains(value, "[") {
 					tmpObj := make(map[string]interface{})
 					json.Unmarshal([]byte(value), &tmpObj)
