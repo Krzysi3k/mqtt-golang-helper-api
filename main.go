@@ -10,9 +10,6 @@ import (
 )
 
 func main() {
-	// r := gin.New()
-	// r.Use(gin.LoggerWithConfig(gin.LoggerConfig{SkipPaths: []string{"/"}}))
-
 	var ctx = context.Background()
 	rdb := redis.NewClient(&redis.Options{
 		Addr:     "192.168.0.123:6379",
