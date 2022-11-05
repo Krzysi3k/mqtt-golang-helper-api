@@ -23,7 +23,6 @@ func GetRedisData(ctx context.Context, rdb *redis.Client) gin.HandlerFunc {
 			c.JSON(400, gin.H{"payload": "missing query string"})
 			return
 		}
-
 		val, err := rdb.Get(ctx, keyName).Result()
 		if err != nil {
 			c.JSON(404, gin.H{"payload": "key not found"})
@@ -33,20 +32,11 @@ func GetRedisData(ctx context.Context, rdb *redis.Client) gin.HandlerFunc {
 			c.String(200, val)
 			return
 		}
-		if strings.Contains(val, "[") {
-			resultArr := []map[string]interface{}{}
-			json.Unmarshal([]byte(val), &resultArr)
-			c.JSON(200, resultArr)
-			return
-		}
-
-		result := make(map[string]interface{})
-		if strings.Contains(val, "{") {
-			json.Unmarshal([]byte(val), &result)
+		if strings.Contains(val, "[") || strings.Contains(val, "{") {
+			c.Data(http.StatusOK, "application/json", []byte(val))
 		} else {
-			result["payload"] = val
+			c.JSON(200, gin.H{"payload": val})
 		}
-		c.JSON(200, result)
 	}
 }
 
