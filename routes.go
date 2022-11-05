@@ -85,17 +85,15 @@ func GetRedisInfo(ctx context.Context, rdb *redis.Client) gin.HandlerFunc {
 		}
 		val := rdb.MGet(ctx, keys...).Val()
 		var sb strings.Builder
-		var s string
 		sb.WriteString("{")
 		for i := 0; i < len(keys); i++ {
 			if val[i] != nil {
 				if v, ok := val[i].(string); ok {
 					if strings.Contains(v, "{") || strings.Contains(v, "[") {
-						s = `"` + keys[i] + `":` + v + ","
+						sb.WriteString(`"` + keys[i] + `":` + v + ",")
 					} else {
-						s = `"` + keys[i] + `":"` + v + `",`
+						sb.WriteString(`"` + keys[i] + `":"` + v + `",`)
 					}
-					sb.WriteString(s)
 				}
 			}
 		}
