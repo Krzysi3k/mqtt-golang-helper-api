@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
+	"net/http"
 	"strings"
 
 	"github.com/docker/docker/api/types"
@@ -50,7 +51,7 @@ func GetRedisData(ctx context.Context, rdb *redis.Client) gin.HandlerFunc {
 }
 
 // GET /redis-info
-func GetRedisInfo(ctx context.Context, rdb *redis.Client) gin.HandlerFunc {
+func GetRedisInfo2(ctx context.Context, rdb *redis.Client) gin.HandlerFunc {
 
 	return func(c *gin.Context) {
 		keys := []string{
@@ -58,7 +59,6 @@ func GetRedisInfo(ctx context.Context, rdb *redis.Client) gin.HandlerFunc {
 			"door-state",
 			"rotate-option",
 			"washing-state",
-			// "clicks",
 		}
 		val := rdb.MGet(ctx, keys...).Val()
 		combinedOutput := []map[string]interface{}{}
@@ -71,6 +71,40 @@ func GetRedisInfo(ctx context.Context, rdb *redis.Client) gin.HandlerFunc {
 		combinedOutput = append(combinedOutput, map[string]interface{}{"Redis keys-in-use": len(redisKeys)})
 		merged := mergeMaps(combinedOutput...)
 		c.JSON(200, merged)
+	}
+}
+
+func GetRedisInfo(ctx context.Context, rdb *redis.Client) gin.HandlerFunc {
+
+	return func(c *gin.Context) {
+		keys := []string{
+			"vibration-sensor",
+			"door-state",
+			"rotate-option",
+			"washing-state",
+		}
+		val := rdb.MGet(ctx, keys...).Val()
+		var sb strings.Builder
+		var s string
+		sb.WriteString("{")
+		for i := 0; i < len(keys); i++ {
+			if val[i] != nil {
+				if v, ok := val[i].(string); ok {
+					if strings.Contains(v, "{") || strings.Contains(v, "[") {
+						s = `"` + keys[i] + `":` + v + ","
+					} else {
+						s = `"` + keys[i] + `":"` + v + `",`
+					}
+					sb.WriteString(s)
+				}
+			}
+		}
+		redisKeys := rdb.Keys(ctx, "*").Val()
+		sb.WriteString(fmt.Sprintf("\"Redis keys-in-use\":%v}", len(redisKeys)))
+		// sBuilder.WriteString("}")
+		output := sb.String()
+		// jsonOut := output[0:len(output)-2] + "}"
+		c.Data(http.StatusOK, "application/json", []byte(output))
 	}
 }
 

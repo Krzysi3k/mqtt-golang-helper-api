@@ -26,6 +26,7 @@ func main() {
 	r := gin.Default()
 	r.GET("/get-redis-data", GetRedisData(ctx, rdb))
 	r.GET("/redis-info", GetRedisInfo(ctx, rdb))
+	r.GET("/redis-info2", GetRedisInfo2(ctx, rdb))
 	r.GET("/docker-info", GetDockerInfo(ctx, dockerClient))
 
 	r.Run("0.0.0.0:5001")
