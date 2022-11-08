@@ -2,7 +2,6 @@ package main
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 	"log"
 	"net/http"
@@ -41,29 +40,6 @@ func GetRedisData(ctx context.Context, rdb *redis.Client) gin.HandlerFunc {
 }
 
 // GET /redis-info
-func GetRedisInfo2(ctx context.Context, rdb *redis.Client) gin.HandlerFunc {
-
-	return func(c *gin.Context) {
-		keys := []string{
-			"vibration-sensor",
-			"door-state",
-			"rotate-option",
-			"washing-state",
-		}
-		val := rdb.MGet(ctx, keys...).Val()
-		combinedOutput := []map[string]interface{}{}
-		for i := 0; i < len(keys); i++ {
-			if val[i] != nil {
-				combinedOutput = append(combinedOutput, map[string]interface{}{keys[i]: val[i]})
-			}
-		}
-		redisKeys := rdb.Keys(ctx, "*").Val()
-		combinedOutput = append(combinedOutput, map[string]interface{}{"Redis keys-in-use": len(redisKeys)})
-		merged := mergeMaps(combinedOutput...)
-		c.JSON(200, merged)
-	}
-}
-
 func GetRedisInfo(ctx context.Context, rdb *redis.Client) gin.HandlerFunc {
 
 	return func(c *gin.Context) {
@@ -90,9 +66,9 @@ func GetRedisInfo(ctx context.Context, rdb *redis.Client) gin.HandlerFunc {
 		redisKeys := rdb.Keys(ctx, "*").Val()
 		sb.WriteString(fmt.Sprintf("\"Redis keys-in-use\":%v}", len(redisKeys)))
 		// sBuilder.WriteString("}")
-		output := sb.String()
+		// output := sb.String()
 		// jsonOut := output[0:len(output)-2] + "}"
-		c.Data(http.StatusOK, "application/json", []byte(output))
+		c.Data(http.StatusOK, "application/json", []byte(sb.String()))
 	}
 }
 
@@ -128,26 +104,6 @@ func GetDockerInfo(ctx context.Context, dockerClient *client.Client) gin.Handler
 			c.JSON(400, gin.H{"payload": "wrong or missing query string"})
 		}
 	}
-}
-
-func mergeMaps(maps ...map[string]interface{}) map[string]interface{} {
-	result := make(map[string]interface{})
-	for _, m := range maps {
-		for k, v := range m {
-			if value, ok := v.(string); ok {
-				if strings.Contains(value, "{") || strings.Contains(value, "[") {
-					tmpObj := make(map[string]interface{})
-					json.Unmarshal([]byte(value), &tmpObj)
-					result[k] = tmpObj
-					continue
-				}
-				result[k] = value
-			} else {
-				result[k] = v
-			}
-		}
-	}
-	return result
 }
 
 func logError(err error) {
