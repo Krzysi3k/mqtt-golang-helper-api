@@ -48,6 +48,8 @@ func GetRedisInfo(ctx context.Context, rdb *redis.Client) gin.HandlerFunc {
 			"door-state",
 			"rotate-option",
 			"washing-state",
+			"KnobOption",
+			"0e99d4daf1fa42c999a2004ddb3fbdf0",
 		}
 		val := rdb.MGet(ctx, keys...).Val()
 		var sb strings.Builder
