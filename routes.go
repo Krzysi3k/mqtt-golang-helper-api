@@ -49,7 +49,6 @@ func GetRedisInfo(ctx context.Context, rdb *redis.Client) gin.HandlerFunc {
 			"rotate-option",
 			"washing-state",
 			"KnobOption",
-			"0e99d4daf1fa42c999a2004ddb3fbdf0",
 		}
 		val := rdb.MGet(ctx, keys...).Val()
 		var sb strings.Builder
@@ -81,27 +80,27 @@ func GetDockerInfo(ctx context.Context, dockerClient *client.Client) gin.Handler
 		queryParam := c.Query("items")
 
 		if queryParam == "containers" {
-			containers, err := dockerClient.ContainerList(ctx, types.ContainerListOptions{All: true})
+			containerList, err := dockerClient.ContainerList(ctx, types.ContainerListOptions{All: true})
 			logError(err)
-			conArr := []string{}
-			for _, container := range containers {
+			containers := []string{}
+			for _, container := range containerList {
 				conName := strings.Replace(container.Names[0], "/", "", -1)
 				line := fmt.Sprintf("%v - %v", conName, container.Status)
-				conArr = append(conArr, line)
+				containers = append(containers, line)
 			}
-			c.JSON(200, gin.H{"containers": conArr})
+			c.JSON(200, gin.H{"containers": containers})
 		} else if queryParam == "images" {
-			images, err := dockerClient.ImageList(ctx, types.ImageListOptions{All: true})
+			imagesList, err := dockerClient.ImageList(ctx, types.ImageListOptions{All: true})
 			logError(err)
-			imgArr := []string{}
-			for _, img := range images {
+			images := []string{}
+			for _, img := range imagesList {
 				if strings.Contains(img.RepoTags[0], "<none>") {
 					continue
 				}
 				line := fmt.Sprintf("%v, %vMB", img.RepoTags[0], (img.Size / 1024 / 1024))
-				imgArr = append(imgArr, line)
+				images = append(images, line)
 			}
-			c.JSON(200, gin.H{"images": imgArr})
+			c.JSON(200, gin.H{"images": images})
 		} else {
 			c.JSON(400, gin.H{"payload": "wrong or missing query string"})
 		}
