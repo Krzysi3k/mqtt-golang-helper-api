@@ -27,7 +27,7 @@ func GetRedisData(ctx context.Context, rdb *redis.Client) gin.HandlerFunc {
 			c.JSON(404, gin.H{"payload": "key not found"})
 			return
 		}
-		if keyName == "docker-metrics-cpu" || keyName == "docker-metrics-mem" || keyName == "termometr-payload" {
+		if strings.Contains(keyName, "docker:metrics:") || keyName == "termometr-payload" {
 			c.String(200, val)
 			return
 		}
