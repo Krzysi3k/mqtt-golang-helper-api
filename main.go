@@ -23,12 +23,13 @@ func main() {
 		log.Panic(err)
 	}
 
-	const portNum = 5001
+	const portNum = 5002
 	gin.SetMode(gin.ReleaseMode)
 	r := gin.Default()
 	r.GET("/get-redis-data", GetRedisData(ctx, rdb))
 	r.GET("/redis-info", GetRedisInfo(ctx, rdb))
 	r.GET("/docker-info", GetDockerInfo(ctx, dockerClient))
+	r.GET("/metrics", PrometheusMetrics(ctx))
 
 	log.Println("starting api on port:", portNum)
 	r.Run(fmt.Sprintf("0.0.0.0:%v", portNum))
