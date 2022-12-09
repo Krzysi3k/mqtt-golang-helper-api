@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"log"
-	"net/http"
 	"strings"
 
 	"github.com/docker/docker/api/types"
@@ -32,7 +31,7 @@ func GetRedisData(ctx context.Context, rdb *redis.Client) gin.HandlerFunc {
 			return
 		}
 		if strings.Contains(val, "[") || strings.Contains(val, "{") {
-			c.Data(http.StatusOK, "application/json", []byte(val))
+			c.Data(200, "application/json", []byte(val))
 		} else {
 			c.JSON(200, gin.H{"payload": val})
 		}
@@ -69,7 +68,7 @@ func GetRedisInfo(ctx context.Context, rdb *redis.Client) gin.HandlerFunc {
 		// sBuilder.WriteString("}")
 		// output := sb.String()
 		// jsonOut := output[0:len(output)-2] + "}"
-		c.Data(http.StatusOK, "application/json", []byte(sb.String()))
+		c.Data(200, "application/json", []byte(sb.String()))
 	}
 }
 

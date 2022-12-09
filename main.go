@@ -23,7 +23,7 @@ func main() {
 		log.Panic(err)
 	}
 
-	const portNum = 5002
+	const portNum = 5001
 	gin.SetMode(gin.ReleaseMode)
 	r := gin.Default()
 	r.GET("/get-redis-data", GetRedisData(ctx, rdb))
